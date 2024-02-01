@@ -16,6 +16,21 @@ The following resources were helpful to us during development of this extension:
 - https://www.swiftforensics.com/2020/03/parsing-unknown-protobufs-with-python.html
 - https://downrightnifty.me/blog/2022/12/26/hacking-google-home.html
 
+This extension supports either:
+
+1. Wire protobufs in the request body (when the `Content-Type` header contains
+ the case-insensitive string `application/octet-stream` or `proto`). **OR**
+
+2. Base64-encoded protobufs anywhere within the request body, marked using the
+ start and end markers `$$`. Both the markers and encoding can be changed by
+ editing the `proto_markers.py` file.
+
+Markers can also be used with the
+ [Hackvertor](https://portswigger.net/bappstore/65033cbd2c344fbabe57ac060b5dd100)
+ extension to support scenarios which require additional layers of encoding.
+ Hackvertor must be loaded after this extension to perform encoding in the
+ correct order.
+
 # Installation
 
 1) Install [protoscope](https://github.com/protocolbuffers/protoscope/tree/main)
@@ -34,6 +49,7 @@ Note: This was tested in a linux environment with Burp Suite Professional
 # Test
 
 Using Python 2.7, run the unit tests using:
+
 ```
 python2 proto_lib_test.py
 ```

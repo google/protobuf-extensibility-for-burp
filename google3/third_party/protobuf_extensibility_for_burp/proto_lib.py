@@ -15,11 +15,10 @@
 
 import os
 import subprocess
-import tempfile
 
 
 def decode_protobuf(proto_input):
-  """call protoc --decode_raw.
+  """call protoscope.
 
   Args:
     proto_input: data to decode
@@ -28,21 +27,16 @@ def decode_protobuf(proto_input):
     - stdout of command
   """
 
-  tmp_file = tempfile.NamedTemporaryFile(delete=False)
-  with open(tmp_file.name, "wb") as f:
-    f.write(proto_input)
-    f.close()
-  p = subprocess.Popen(["protoscope", tmp_file.name],
+  p = subprocess.Popen(["protoscope"],
                        stdin=subprocess.PIPE,
                        stdout=subprocess.PIPE)
-  stdout = p.communicate()[0]
-  os.remove(tmp_file.name)
+  stdout = p.communicate(input=proto_input)[0]
 
   return stdout
 
 
 def encode_protobuf(proto_input):
-  """call protoc --encode.
+  """call protoscope -s.
 
   Args:
     proto_input: data to encode
@@ -51,14 +45,9 @@ def encode_protobuf(proto_input):
     - stdout of command
   """
 
-  tmp_file = tempfile.NamedTemporaryFile(delete=False)
-  with open(tmp_file.name, "wb") as f:
-    f.write(proto_input)
-    f.close()
-  p = subprocess.Popen(["protoscope", "-s", tmp_file.name],
+  p = subprocess.Popen(["protoscope", "-s"],
                        stdin=subprocess.PIPE,
                        stdout=subprocess.PIPE)
-  stdout = p.communicate()[0]
-  os.remove(tmp_file.name)
+  stdout = p.communicate(input=proto_input)[0]
 
   return stdout
