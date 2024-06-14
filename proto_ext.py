@@ -20,6 +20,7 @@ from burp import IBurpExtender
 from burp import IHttpListener
 from burp import IMessageEditorTab
 from burp import IMessageEditorTabFactory
+from burp import IParameter
 from java.io import PrintWriter
 from proto_lib import decode_protobuf
 from proto_lib import encode_protobuf
@@ -116,9 +117,11 @@ class ProtoTab(IMessageEditorTab):
     if is_request:
       req = self.helpers.analyzeRequest(content)
       headers = req.getHeaders()
+      params = req.getParameters()
     else:
       resp = self.helpers.analyzeResponse(content)
       headers = resp.getHeaders()
+      params = None
 
     body_content = self.fetchMessageBody(content, is_request)
 
@@ -142,6 +145,21 @@ class ProtoTab(IMessageEditorTab):
           if "proto" in value or "application/octet-stream" in value:
             # show the "Protobuf" tab
             return True
+
+    # check for "application/x-protobuf" in URL parameter "$httpHeaders" or
+    # "$ct" which can be used to override content-type in requests (used in
+    # certain Google APIs)
+    for p in params:
+      if (
+          p.getType() == IParameter.PARAM_URL
+          and (
+              self.helpers.urlDecode(p.getName()) == "$httpHeaders"
+              or self.helpers.urlDecode(p.getName()) == "$ct"
+          )
+          and "application/x-protobuf" in self.helpers.urlDecode(p.getValue())
+      ):
+        # show the "Protobuf" tab
+        return True
 
     # no match, don't show the "Protobuf" tab
     return False
